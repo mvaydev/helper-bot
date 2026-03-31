@@ -1,19 +1,28 @@
 import { config } from '#root/config'
 import { logger } from '#root/logger'
-import { ConversationFlavor } from '@grammyjs/conversations'
+import {
+	ConversationFlavor,
+	conversations,
+	createConversation,
+} from '@grammyjs/conversations'
 import { Bot, Context } from 'grammy'
 import { startFeature } from './features/start'
 import { errorHandlingMiddleware } from './midddlewares/error'
+import { buttonsFeature } from './features/buttons'
+import { conversationButtons } from './conversations/buttons'
 
 export type MyContext = ConversationFlavor<Context>
 
 const bot = new Bot<MyContext>(config.BOT_TOKEN)
 
-// Error handling
+bot.use(conversations())
 bot.catch(errorHandlingMiddleware)
+
+bot.use(createConversation(conversationButtons, 'buttons'))
 
 // Handlers
 bot.use(startFeature)
+bot.use(buttonsFeature)
 
 export async function startPolling() {
 	logger.info('Polling started')
