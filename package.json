@@ -6,7 +6,11 @@
 		"#root/*": "./build/src/*"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"typecheck": "tsc",
+		"build": "tsc --noEmit false",
+		"dev": "tsc-watch --onSuccess \"tsx ./src/main.ts\"",
+		"start": "tsc && tsx ./src/main.ts",
+		"start:force": "tsx ./src/main.ts"
 	},
 	"repository": {
 		"type": "git",
@@ -25,6 +29,7 @@
 	},
 	"homepage": "https://github.com/mvaydev/helper-bot#readme",
 	"dependencies": {
+		"@grammyjs/conversations": "^2.1.1",
 		"@grammyjs/parse-mode": "1.11.1",
 		"@grammyjs/types": "3.20.0",
 		"callback-data": "1.1.1",
