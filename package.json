@@ -3,14 +3,14 @@
 	"version": "0.1.0",
 	"description": "Personal helper for Telegram",
 	"imports": {
-		"#root/*": "./build/src/*"
+		"#root/*": "./dist/src/*"
 	},
 	"scripts": {
 		"typecheck": "tsc",
-		"build": "tsc --noEmit false",
 		"dev": "tsc-watch --onSuccess \"tsx ./src/main.ts\"",
-		"start": "tsc && tsx ./src/main.ts",
-		"start:force": "tsx ./src/main.ts"
+		"start": "node dist",
+		"build": "webpack --mode=production",
+		"build:watch": "webpack --watch --mode=development"
 	},
 	"repository": {
 		"type": "git",
@@ -42,7 +42,12 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.21",
+		"terser-webpack-plugin": "^5.4.0",
+		"ts-loader": "^9.5.4",
 		"tsc-watch": "^6.3.1",
-		"typescript": "^5.9.2"
+		"typescript": "^5.9.2",
+		"webpack": "^5.105.4",
+		"webpack-cli": "^7.0.2",
+		"webpack-node-externals": "^3.0.0"
 	}
 }
