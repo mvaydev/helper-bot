@@ -1,0 +1,35 @@
+name: Deploy Bot
+on:
+    push:
+        branches: [master]
+jobs:
+    deploy:
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Checkot repository
+              uses: actions/checkout@v4
+
+            - name: Copy files to VPS
+              uses: appleboy/scp-action@v0.1.0
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  port: ${{ secrets.VPS_PORT }}
+                  username: ${{ secrets.VPS_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  source: "./*"
+                  target: ${{ secrets.VPS_PATH }}
+
+            - name: Restart PM2
+              uses: appleboy/ssh-action@v0.1.0
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  port: ${{ secrets.VPS_PORT }}
+                  username: ${{ secrets.VPS_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      cd ${{ secrets.VPS_PATH }}
+                      source ~/.nvm/nvm.sh && nvm use 24.7.0
+                      npm install
+                      npm run build
+                      pm2 kill
+                      pm2 start --name "helper-bot" ./dist/bundle.min.js
