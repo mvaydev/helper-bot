@@ -6,6 +6,8 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 	await ctx.reply('Отправьте сообщение, к которому нужно добавить кнопки 👇')
 	const msgCtx = await conversation.waitFor('message')
 
+	// Create buttons
+
 	const buttons: {
 		text: string
 		url: string
@@ -59,10 +61,10 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 		buttons.map(({ text, url }) => [InlineKeyboard.url(text, url)]),
 	)
 
-	const requestChannelsKeyboard = new Keyboard().requestChat(
-		'Выбрать канал 📢',
-		1,
-		{
+	// Request channel
+
+	const requestChannelsKeyboard = new Keyboard()
+		.requestChat('📢 Выбрать канал', 1, {
 			chat_is_channel: true,
 			user_administrator_rights: {
 				is_anonymous: false,
@@ -93,9 +95,10 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 				can_post_messages: true,
 			},
 			bot_is_member: true,
-		},
-	)
-	await ctx.reply('📰 Выберите канал для постинга', {
+		})
+		.oneTime()
+		.resized()
+	await ctx.reply('📰 Выберите канал для отправки', {
 		reply_markup: requestChannelsKeyboard,
 	})
 	const { message: channelIdMsg } = await conversation.waitFor(':chat_shared', {
@@ -115,11 +118,40 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 
 	const userId = ctx.from?.id!
 
+	// Sending post
+
 	if (channelAdmins.map((member) => member.user.id).includes(userId)) {
 		try {
+			await msgCtx.copyMessage(ctx.chatId!, {
+				reply_markup: keyboard,
+			})
+			const CONFIRM_TEXT = '✅ Подтвердить'
+			const CANCEL_TEXT = '❌ Отмена'
+			const confirmKeyboard = new Keyboard()
+				.text(CONFIRM_TEXT)
+				.text(CANCEL_TEXT)
+				.resized()
+				.oneTime()
+			await ctx.reply(`👆 Результат. Подтвердить отправку в канал?`, {
+				reply_markup: confirmKeyboard,
+			})
+
+			const { message: confirmMessage } = await conversation.waitForHears(
+				[CONFIRM_TEXT, CANCEL_TEXT],
+				{
+					otherwise: async (ctx) =>
+						await ctx.reply('👇 Нажмите кнопку снизу для подтверждения'),
+				},
+			)
+			if (confirmMessage?.text === CANCEL_TEXT) {
+				await ctx.reply('❌ Отправка отменена')
+				return
+			}
+
 			await msgCtx.copyMessage(channelId, {
 				reply_markup: keyboard,
 			})
+			await ctx.reply('✅ Сообщение отправлено в канал')
 		} catch (err) {
 			await ctx.reply('⚠ Ошибка при отправке сообщения')
 		}
