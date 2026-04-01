@@ -59,13 +59,51 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 		buttons.map(({ text, url }) => [InlineKeyboard.url(text, url)]),
 	)
 
-	await ctx.reply('📰 Отправьте ID канала')
-	const { message: channelIdMsg } = await conversation.waitForHears(/\-\d+/, {
+	const requestChannelsKeyboard = new Keyboard().requestChat(
+		'Выбрать канал 📢',
+		1,
+		{
+			chat_is_channel: true,
+			user_administrator_rights: {
+				is_anonymous: false,
+				can_manage_chat: true,
+				can_delete_messages: false,
+				can_manage_video_chats: false,
+				can_restrict_members: false,
+				can_promote_members: false,
+				can_change_info: false,
+				can_invite_users: false,
+				can_post_stories: false,
+				can_edit_stories: false,
+				can_delete_stories: false,
+				can_post_messages: true,
+			},
+			bot_administrator_rights: {
+				is_anonymous: false,
+				can_manage_chat: true,
+				can_delete_messages: false,
+				can_manage_video_chats: false,
+				can_restrict_members: false,
+				can_promote_members: false,
+				can_change_info: false,
+				can_invite_users: false,
+				can_post_stories: false,
+				can_edit_stories: false,
+				can_delete_stories: false,
+				can_post_messages: true,
+			},
+			bot_is_member: true,
+		},
+	)
+	await ctx.reply('📰 Выберите канал для постинга', {
+		reply_markup: requestChannelsKeyboard,
+	})
+	const { message: channelIdMsg } = await conversation.waitFor(':chat_shared', {
 		otherwise: async (ctx) =>
-			await ctx.reply('Это не похоже на ID канала, введите ещё раз'),
+			await ctx.reply('Это не похоже на канал, отправьте ещё раз'),
 	})
 
-	const channelId = channelIdMsg?.text!
+	const channelId = channelIdMsg?.chat_shared.chat_id!
 	let channelAdmins
 
 	try {
@@ -79,7 +117,7 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 
 	if (channelAdmins.map((member) => member.user.id).includes(userId)) {
 		try {
-			await msgCtx.copyMessage(channelIdMsg?.text!, {
+			await msgCtx.copyMessage(channelId, {
 				reply_markup: keyboard,
 			})
 		} catch (err) {
