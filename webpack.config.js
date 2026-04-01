@@ -16,6 +16,9 @@ module.exports = (env, argv) => {
 		externals: [nodeExternals()],
 		resolve: {
 			extensions: ['.ts', '.js', '.json'],
+			alias: {
+				'#root': path.resolve(__dirname, 'src'),
+			},
 		},
 		module: {
 			rules: [
