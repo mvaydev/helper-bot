@@ -12,6 +12,7 @@ import { buttonsFeature } from './features/buttons'
 import { conversationButtons } from './conversations/buttons'
 import { helpFeature } from './features/help'
 import { helpButtonsFeature } from './features/helpButtons'
+import { helpCloseFeature } from './features/helpClose'
 
 export type MyContext = ConversationFlavor<Context>
 
@@ -28,6 +29,7 @@ bot.use(buttonsFeature)
 
 bot.use(helpFeature)
 bot.use(helpButtonsFeature)
+bot.use(helpCloseFeature)
 
 export async function startPolling() {
 	logger.info('Polling started')

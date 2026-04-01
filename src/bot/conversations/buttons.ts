@@ -1,4 +1,3 @@
-import { config } from '#root/config.js'
 import { Conversation } from '@grammyjs/conversations'
 import { Context, InlineKeyboard, Keyboard } from 'grammy'
 
@@ -19,7 +18,7 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 
 		// Text
 		await ctx.reply(`✏️ Отправьте текст для кнопки <b>${count + 1}</b>`, {
-			reply_markup: count ? stopKeyboard : undefined,
+			reply_markup: stopKeyboard,
 			parse_mode: 'HTML',
 		})
 		const { message: btnTextMsg } = await conversation.waitForHears(
@@ -36,7 +35,7 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 
 		// URL
 		await ctx.reply(`🔗 Отправьте ссылку для кнопки <b>${count + 1}</b>`, {
-			reply_markup: count ? stopKeyboard : undefined,
+			reply_markup: stopKeyboard,
 			parse_mode: 'HTML',
 		})
 		const { message: btnUrlMsg } = await conversation.waitFor('::url', {
