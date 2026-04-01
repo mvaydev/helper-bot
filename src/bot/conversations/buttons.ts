@@ -1,3 +1,4 @@
+import { config } from '#root/config.js'
 import { Conversation } from '@grammyjs/conversations'
 import { Context, InlineKeyboard, Keyboard } from 'grammy'
 
@@ -57,7 +58,34 @@ export async function conversationButtons(conversation: Conversation, ctx: Conte
 	const keyboard = InlineKeyboard.from(
 		buttons.map(({ text, url }) => [InlineKeyboard.url(text, url)]),
 	)
-	msgCtx.copyMessage(msgCtx.chatId, {
-		reply_markup: keyboard,
+
+	await ctx.reply('📰 Отправьте ID канала')
+	const { message: channelIdMsg } = await conversation.waitForHears(/\-\d+/, {
+		otherwise: async (ctx) =>
+			await ctx.reply('Это не похоже на ID канала, введите ещё раз'),
 	})
+
+	const channelId = channelIdMsg?.text!
+	let channelAdmins
+
+	try {
+		channelAdmins = await ctx.api.getChatAdministrators(channelId)
+	} catch (error) {
+		await ctx.reply('⚠ Канал не найден')
+		return
+	}
+
+	const userId = ctx.from?.id!
+
+	if (channelAdmins.map((member) => member.user.id).includes(userId)) {
+		try {
+			await msgCtx.copyMessage(channelIdMsg?.text!, {
+				reply_markup: keyboard,
+			})
+		} catch (err) {
+			await ctx.reply('⚠ Ошибка при отправке сообщения')
+		}
+	} else {
+		await ctx.reply('⚠ Вы не являетесь администратором данного канала')
+	}
 }
